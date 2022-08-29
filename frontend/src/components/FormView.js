@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import $ from 'jquery';
 import '../stylesheets/FormView.css';
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 class FormView extends Component {
   constructor(props) {
     super();
@@ -11,50 +11,50 @@ class FormView extends Component {
       difficulty: 1,
       category: 1,
       categories: {},
+      errors: {},
+      message: ''
     };
   }
 
   componentDidMount() {
-    $.ajax({
-      url: `/categories`, //TODO: update request URL
-      type: 'GET',
-      success: (result) => {
-        this.setState({ categories: result.categories });
-        return;
-      },
-      error: (error) => {
-        alert('Unable to load categories. Please try your request again');
-        return;
-      },
+    fetch(`${API_BASE_URL}/categories`)
+    .then( resp => resp.json())
+    .then(result => {
+      this.setState({ categories: result.data.categories });
+    })
+    .catch(error => {
+      alert('Unable to load questions. Please try your request again');
     });
   }
 
   submitQuestion = (event) => {
     event.preventDefault();
-    $.ajax({
-      url: '/questions', //TODO: update request URL
-      type: 'POST',
-      dataType: 'json',
-      contentType: 'application/json',
-      data: JSON.stringify({
+    fetch(`${API_BASE_URL}/questions`, {
+      'method': 'POST',
+      'headers': {
+        'Content-Type': 'application/json'
+      },
+      'body': JSON.stringify({
         question: this.state.question,
         answer: this.state.answer,
         difficulty: this.state.difficulty,
         category: this.state.category,
-      }),
-      xhrFields: {
-        withCredentials: true,
-      },
-      crossDomain: true,
-      success: (result) => {
-        document.getElementById('add-question-form').reset();
-        return;
-      },
-      error: (error) => {
-        alert('Unable to add question. Please try your request again');
-        return;
-      },
-    });
+      })
+    })
+    .then( resp => resp.json())
+    .then(result => {
+      console.log(result.status);
+        if(result.status === 200){
+          this.setState({message: result.message})
+          document.getElementById('add-question-form').reset();
+        }else{
+          this.setState({errors: result.error})
+        }
+    })
+    .catch(error => {
+      // console.log(error);
+      alert('Unable to load questions. Please try your request again');
+    })
   };
 
   handleChange = (event) => {
@@ -64,6 +64,7 @@ class FormView extends Component {
   render() {
     return (
       <div id='add-form'>
+        <div className="alert-success">{this.state.message}</div>
         <h2>Add a New Trivia Question</h2>
         <form
           className='form-view'
@@ -73,10 +74,12 @@ class FormView extends Component {
           <label>
             Question
             <input type='text' name='question' onChange={this.handleChange} />
+            <div className="alert-danger">{this.state.errors["question"]}</div>
           </label>
           <label>
             Answer
             <input type='text' name='answer' onChange={this.handleChange} />
+            <div className="alert-danger">{this.state.errors["answer"]}</div>
           </label>
           <label>
             Difficulty
@@ -87,6 +90,7 @@ class FormView extends Component {
               <option value='4'>4</option>
               <option value='5'>5</option>
             </select>
+            <div className="alert-danger">{this.state.errors["difficulty"]}</div>
           </label>
           <label>
             Category
@@ -99,6 +103,7 @@ class FormView extends Component {
                 );
               })}
             </select>
+            <div className="alert-danger">{this.state.errors["category"]}</div>
           </label>
           <input type='submit' className='button' value='Submit' />
         </form>
