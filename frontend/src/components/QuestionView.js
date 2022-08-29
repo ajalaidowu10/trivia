@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import '../stylesheets/App.css';
 import Question from './Question';
 import Search from './Search';
-import $ from 'jquery';
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 class QuestionView extends Component {
   constructor() {
     super();
@@ -21,22 +21,19 @@ class QuestionView extends Component {
   }
 
   getQuestions = () => {
-    $.ajax({
-      url: `/questions?page=${this.state.page}`, //TODO: update request URL
-      type: 'GET',
-      success: (result) => {
-        this.setState({
-          questions: result.questions,
-          totalQuestions: result.total_questions,
-          categories: result.categories,
-          currentCategory: result.current_category,
-        });
-        return;
-      },
-      error: (error) => {
-        alert('Unable to load questions. Please try your request again');
-        return;
-      },
+    fetch(`${API_BASE_URL}/questions?page=${this.state.page}`)
+    .then( resp => resp.json())
+    .then(questions => {
+      const result = questions.data;
+      this.setState({
+        questions: result.questions,
+        totalQuestions: result.total_questions,
+        categories: result.categories,
+        currentCategory: result.current_category,
+      });
+    })
+    .catch(error => {
+      alert('Unable to load questions. Please try your request again');
     });
   };
 
@@ -64,64 +61,56 @@ class QuestionView extends Component {
   }
 
   getByCategory = (id) => {
-    $.ajax({
-      url: `/categories/${id}/questions`, //TODO: update request URL
-      type: 'GET',
-      success: (result) => {
-        this.setState({
-          questions: result.questions,
-          totalQuestions: result.total_questions,
-          currentCategory: result.current_category,
-        });
-        return;
-      },
-      error: (error) => {
-        alert('Unable to load questions. Please try your request again');
-        return;
-      },
-    });
+    fetch(`${API_BASE_URL}/categories/${id}/questions`)
+    .then( resp => resp.json())
+    .then(questions => {
+      const result = questions.data;
+      this.setState({
+        questions: result.questions,
+        totalQuestions: result.total_questions,
+        currentCategory: result.current_category,
+      });
+    })
+    .catch(error => {
+      alert('Unable to load questions. Please try your request again');
+    })
   };
 
   submitSearch = (searchTerm) => {
-    $.ajax({
-      url: `/questions`, //TODO: update request URL
-      type: 'POST',
-      dataType: 'json',
-      contentType: 'application/json',
-      data: JSON.stringify({ searchTerm: searchTerm }),
-      xhrFields: {
-        withCredentials: true,
+    fetch(`${API_BASE_URL}/questions`, {
+      'method': 'POST',
+      'headers': {
+        'Content-Type': 'application/json'
       },
-      crossDomain: true,
-      success: (result) => {
-        this.setState({
-          questions: result.questions,
-          totalQuestions: result.total_questions,
-          currentCategory: result.current_category,
-        });
-        return;
-      },
-      error: (error) => {
-        alert('Unable to load questions. Please try your request again');
-        return;
-      },
-    });
+      'body': JSON.stringify({ searchTerm: searchTerm })
+    })
+    .then( resp => resp.json())
+    .then(questions => {
+      const result = questions.data;
+      this.setState({
+        questions: result.questions,
+        totalQuestions: result.total_questions,
+        currentCategory: result.current_category,
+      });
+    })
+    .catch(error => {
+      alert('Unable to load questions. Please try your request again');
+    })
   };
 
   questionAction = (id) => (action) => {
     if (action === 'DELETE') {
       if (window.confirm('are you sure you want to delete the question?')) {
-        $.ajax({
-          url: `/questions/${id}`, //TODO: update request URL
-          type: 'DELETE',
-          success: (result) => {
-            this.getQuestions();
-          },
-          error: (error) => {
-            alert('Unable to load questions. Please try your request again');
-            return;
-          },
-        });
+        fetch(`${API_BASE_URL}/questions/${id}`, {
+          'method': 'DELETE',
+        })
+        .then( resp => resp.json())
+        .then(result => {
+          this.getQuestions();
+        })
+        .catch(error => {
+          alert('Unable to load questions. Please try your request again');
+        })
       }
     }
   };
@@ -142,7 +131,7 @@ class QuestionView extends Component {
               <li
                 key={id}
                 onClick={() => {
-                  this.getByCategory(id);
+                  this.getByCategory(Number(id) + 1);
                 }}
               >
                 {this.state.categories[id]}
@@ -163,7 +152,7 @@ class QuestionView extends Component {
               key={q.id}
               question={q.question}
               answer={q.answer}
-              category={this.state.categories[q.category]}
+              category={this.state.categories[q.category - 1]}
               difficulty={q.difficulty}
               questionAction={this.questionAction(q.id)}
             />
