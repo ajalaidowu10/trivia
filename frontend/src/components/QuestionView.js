@@ -13,6 +13,7 @@ class QuestionView extends Component {
       totalQuestions: 0,
       categories: {},
       currentCategory: null,
+      searchError: {},
     };
   }
 
@@ -77,7 +78,7 @@ class QuestionView extends Component {
   };
 
   submitSearch = (searchTerm) => {
-    fetch(`${API_BASE_URL}/questions`, {
+    fetch(`${API_BASE_URL}/questions/search`, {
       'method': 'POST',
       'headers': {
         'Content-Type': 'application/json'
@@ -85,13 +86,15 @@ class QuestionView extends Component {
       'body': JSON.stringify({ searchTerm: searchTerm })
     })
     .then( resp => resp.json())
-    .then(questions => {
-      const result = questions.data;
-      this.setState({
-        questions: result.questions,
-        totalQuestions: result.total_questions,
-        currentCategory: result.current_category,
-      });
+    .then(result => {
+      if(result.status === 200){
+        this.setState({
+          questions: result.data.questions,
+          totalQuestions: result.data.total_questions
+        });
+      }else{
+        this.setState({searchError: result.error})
+      }
     })
     .catch(error => {
       alert('Unable to load questions. Please try your request again');
@@ -143,7 +146,7 @@ class QuestionView extends Component {
               </li>
             ))}
           </ul>
-          <Search submitSearch={this.submitSearch} />
+          <Search submitSearch={this.submitSearch} searchError={this.state.searchError} />
         </div>
         <div className='questions-list'>
           <h2>Questions</h2>

@@ -43,7 +43,6 @@ class FormView extends Component {
     })
     .then( resp => resp.json())
     .then(result => {
-      console.log(result.status);
         if(result.status === 200){
           this.setState({message: result.message})
           document.getElementById('add-question-form').reset();
@@ -52,7 +51,6 @@ class FormView extends Component {
         }
     })
     .catch(error => {
-      // console.log(error);
       alert('Unable to load questions. Please try your request again');
     })
   };

@@ -24,6 +24,7 @@ class Search extends Component {
           ref={(input) => (this.search = input)}
           onChange={this.handleInputChange}
         />
+        <div className="alert-danger">{this.props.searchError['searchTerm']}</div>
         <input type='submit' value='Submit' className='button' />
       </form>
     );

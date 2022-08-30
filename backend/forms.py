@@ -19,9 +19,11 @@ class QuestionForm(Form):
         'difficulty',
         validators=[DataRequired()],
     )
+
+class SearchForm(Form):
     searchTerm = StringField(
         'searchTerm',
-        validators=[optional()],
+        validators=[DataRequired()],
     )
 
 
