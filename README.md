@@ -66,7 +66,19 @@ flask run
 
 ### Frontend
 
-The frontend app was built using create-react-app. In order to run the app in development mode use npm start. Then open http://localhost:3000 to view it in the browser.
+The frontend app was built using create-react-app. 
+
+#### Installing Node and NPM
+
+This project depends on Nodejs and Node Package Manager (NPM). Find and download Node and npm (which is included) at: [https://nodejs.com/en/download](https://nodejs.org/en/download/).
+
+This project uses NPM to manage software dependencies. NPM Relies on the package.json file located in the `frontend` directory of this repository. After cloning, open your terminal and run:
+
+```bash
+npm install
+```
+
+In order to run the app in development mode use npm start. Then open http://localhost:3000 to view it in the browser.
 
 Also you need to create a .env file using the .env-example file. Then set REACT_APP_API_BASE_URL to point to you backend base URL
 
@@ -74,6 +86,7 @@ Also you need to create a .env file using the .env-example file. Then set REACT_
 
 ### Getting Started 
 Base URL: This application is only hosted locally. The base URL depends on local server host.
+
 Authentication: This version does not require authentication or API keys.
 
 ### API Payload
