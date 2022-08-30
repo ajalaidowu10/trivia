@@ -139,7 +139,7 @@ def create_app(test_config=None):
             return jsonify({
                 'status': 200,
                 'error': None,
-                'message': 'Question added successfully',
+                'message': 'Question created successfully',
                 'data': {'question': question.format()}
             })
         except Exception:
@@ -249,14 +249,14 @@ def create_app(test_config=None):
     Create error handlers for all expected errors
     including 404 and 422.
     """
-    @app.errorhandler(422)
-    def unprocessable(error):
+    @app.errorhandler(404)
+    def bad_request(error):
         return jsonify({
-            'status': 422,
+            'status': 404,
             'error': None,
-            "message": "Request not processable",
+            "message": "Resource not found",
             'data': None
-        }), 422
+        }), 404
 
     @app.errorhandler(400)
     def bad_request(error):
@@ -267,6 +267,15 @@ def create_app(test_config=None):
             'data': None
         }), 400
 
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            'status': 422,
+            'error': None,
+            "message": "Request not processable",
+            'data': None
+        }), 422
+        
     @app.errorhandler(500)
     def server_error(error):
         return jsonify({

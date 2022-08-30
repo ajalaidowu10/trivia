@@ -91,12 +91,12 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['status'], 400)
         self.assertNotEqual(data['error'], None)
 
-    # def test_delete_question(self):
-    #     res = self.client().delete('/questions/11')
-    #     data = json.loads(res.data)
+    def test_delete_question(self):
+        res = self.client().delete('/questions/6')
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['status'], 200)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['status'], 200)
 
     def test_422_if_question_to_delete_does_not_exist(self):
         res = self.client().delete('/questions/5000')
