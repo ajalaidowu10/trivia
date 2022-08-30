@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from forms import QuestionForm
+from forms import QuestionForm, SearchForm
 import random
 
 from models import setup_db, Question, Category
@@ -122,6 +122,29 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     """
+    @app.route('/questions', methods=['POST'])
+    def create_question():
+        form = QuestionForm(csrf_enabled=False)
+        if not form.validate_on_submit():
+            abort(400, form.errors)
+        try:
+            question = Question(
+                question=form.question.data,
+                answer=form.answer.data,
+                category=form.category.data,
+                difficulty=form.difficulty.data
+            )
+            db.session.add(question)
+            db.session.commit()
+            return jsonify({
+                'status': 200,
+                'error': None,
+                'message': 'Question added successfully',
+                'data': {'question': question.format()}
+            })
+        except Exception:
+            db.session.rollback()
+            abort(422)
     """
     @TODO:
     Create a POST endpoint to get questions based on a search term.
@@ -132,41 +155,24 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     """
-    @app.route('/questions', methods=['POST'])
-    def create_question():
-        form = QuestionForm(csrf_enabled=False)
-        if not form.searchTerm.data and not form.validate_on_submit():
+    @app.route('/questions/search', methods=['POST'])
+    def search_question():
+        form = SearchForm(csrf_enabled=False)
+        if not form.validate_on_submit():
             abort(400, form.errors)
         try:
-            if not form.searchTerm.data:
-                question = Question(
-                    question=form.question.data,
-                    answer=form.answer.data,
-                    category=form.category.data,
-                    difficulty=form.difficulty.data
-                )
-                db.session.add(question)
-                db.session.commit()
-                return jsonify({
-                    'status': 200,
-                    'error': None,
-                    'message': 'Question added successfully',
-                    'data': {'question': question.format()}
-                })
-            else:
-                questions = Question.query.filter(Question.question.ilike(f'%{form.searchTerm.data}%')).all()
-                pagenate_questions = paginate_questions(request, questions)
-                return jsonify({
-                    'status': 200,
-                    'error': None,
-                    'message': 'Question searched successfully',
-                    'data': {
-                        'questions': pagenate_questions,
-                        'total_questions': len(questions)
-                    }
-                })
+            questions = Question.query.filter(Question.question.ilike(f'%{form.searchTerm.data}%')).all()
+            pagenate_questions = paginate_questions(request, questions)
+            return jsonify({
+                'status': 200,
+                'error': None,
+                'message': 'Question searched successfully',
+                'data': {
+                    'questions': pagenate_questions,
+                    'total_questions': len(questions)
+                }
+            })
         except Exception:
-            db.session.rollback()
             abort(422)
     
     """
