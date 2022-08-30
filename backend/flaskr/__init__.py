@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from forms import QuestionForm, SearchForm
 import random
+import sys
 
 from models import setup_db, Question, Category
 
@@ -222,15 +223,14 @@ def create_app(test_config=None):
             category_id = quiz_category['id']
 
             if category_id == 0:
-                questions = Question.query.filter(
-                    Question.id.notin_(previous_questions)).all()
+                questions = db.session.query(Question).\
+                filter(~Question.id.in_(previous_questions)).all()
             else:
-                questions = Question.query.filter(
-                    Question.id.notin_(previous_questions),
-                    Question.category == category_id).all()
-            question = None
-            if(questions):
-                question = random.choice(questions)
+                questions = db.session.query(Question).\
+                            filter(Question.category == category_id,\
+                            ~Question.id.in_(previous_questions)).all()
+            
+            question = random.choice(questions)
 
             return jsonify({
                 'status': 200,
@@ -242,6 +242,7 @@ def create_app(test_config=None):
             })
 
         except Exception:
+            print(sys.exc_info())
             abort(422)
 
     """
